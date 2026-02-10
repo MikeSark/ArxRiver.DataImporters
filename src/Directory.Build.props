@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Verita</Authors>
+    <Company>Verita</Company>
+    <RepositoryUrl>https://github.com/0Verita/DataImporters</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>dataimport;validation</PackageTags>
+  </PropertyGroup>
+
+  <!-- Include the repo README in all packages -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../doc/README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

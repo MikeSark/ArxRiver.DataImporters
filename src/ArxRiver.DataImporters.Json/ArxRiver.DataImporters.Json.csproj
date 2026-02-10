@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFrameworks>netstandard2.0;net9.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<PackageId>ArxRiver.DataImporters.Json</PackageId>
+		<Authors>Mike Sarkezians</Authors>
+		<PackageTags>json import validation</PackageTags>
+		<Description>JSON file importer with validation and reporting (System.Text.Json-based). Includes DataImporters.Core.</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Z:\Workspace\0Verita\DataImporters\src\../doc/README.md" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ArxRiver.DataImporters.Core\ArxRiver.DataImporters.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\doc\README.md" Link="README.md">
+			<PackagePath>/</PackagePath>
+			<Pack>true</Pack>
+		</None>
+	</ItemGroup>
+
+</Project>
