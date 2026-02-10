@@ -16,4 +16,7 @@
   <Folder Name="/doc/">
     <File Path="doc/README.md" />
   </Folder>
+  <Properties Name="ExtensibilityGlobals" Scope="PostLoad">
+    <Property Name="FileExplorer" Value=".github\" />
+  </Properties>
 </Solution>

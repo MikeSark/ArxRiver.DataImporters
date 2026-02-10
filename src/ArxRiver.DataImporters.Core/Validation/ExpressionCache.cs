@@ -42,7 +42,7 @@ public static class ExpressionCache
 }
 
 /// <summary>
-/// Globals object passed to CSharpScript. Users write <c>row.PropertyName</c> in expressions.
+/// Globals object passed to CSharpScript. Users write <c>Row.PropertyName</c> in expressions.
 /// </summary>
 public sealed class ExpressionGlobals<T>(T row)
 {

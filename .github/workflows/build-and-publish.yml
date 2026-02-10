@@ -7,8 +7,15 @@ on:
   pull_request:
     branches: [master]
 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version override (e.g. 1.2.0). Leave empty to auto-increment.'
+        required: false
+        type: string
+
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 env:
@@ -46,16 +53,21 @@ jobs:
           name: test-results
           path: TestResults
 
-      - name: Determine version
+      - name: Auto-increment version
+        uses: reecetech/version-increment@2024.10.1
+        id: auto-version
+        with:
+          scheme: semver
+          increment: minor
+
+      - name: Resolve version
         id: version
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"
+          if [[ -n "${{ inputs.version }}" ]]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
           else
-            VERSION="0.0.1-ci.${{ github.run_number }}"
+            echo "version=${{ steps.auto-version.outputs.version }}" >> "$GITHUB_OUTPUT"
           fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Pack
         run: >
@@ -76,3 +88,9 @@ jobs:
           --source ${{ env.NUGET_SOURCE }}
           --api-key ${{ secrets.GITHUB_TOKEN }}
           --skip-duplicate
+
+      - name: Tag version
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
