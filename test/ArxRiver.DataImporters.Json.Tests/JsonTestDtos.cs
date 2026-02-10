@@ -35,14 +35,14 @@ public class JsonNullableDto
 }
 
 /// <summary>DTO with inline validation attributes.</summary>
-[InlineValidation("row.Name.Length > 0", ErrorMessage = "Name is required", RuleName = "NameRequired")]
+[InlineValidation("Row.Name.Length > 0", ErrorMessage = "Name is required", RuleName = "NameRequired")]
 public class JsonValidatedDto
 {
     [JsonColumn("name")]
     public string Name { get; set; } = "";
 
     [JsonColumn("score")]
-    [InlineValidation("row.Score >= 0 && row.Score <= 100", ErrorMessage = "Score must be 0-100", RuleName = "ScoreRange")]
+    [InlineValidation("Row.Score >= 0 && Row.Score <= 100", ErrorMessage = "Score must be 0-100", RuleName = "ScoreRange")]
     public int Score { get; set; }
 }
 

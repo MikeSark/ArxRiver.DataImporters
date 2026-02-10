@@ -48,14 +48,14 @@ public class XmlNullableDto
 }
 
 /// <summary>DTO with inline validation attributes.</summary>
-[InlineValidation("row.Name.Length > 0", ErrorMessage = "Name is required", RuleName = "NameRequired")]
+[InlineValidation("Row.Name.Length > 0", ErrorMessage = "Name is required", RuleName = "NameRequired")]
 public class XmlValidatedDto
 {
     [XmlColumn("name")]
     public string Name { get; set; } = "";
 
     [XmlColumn("score")]
-    [InlineValidation("row.Score >= 0 && row.Score <= 100", ErrorMessage = "Score must be 0-100", RuleName = "ScoreRange")]
+    [InlineValidation("Row.Score >= 0 && Row.Score <= 100", ErrorMessage = "Score must be 0-100", RuleName = "ScoreRange")]
     public int Score { get; set; }
 }
 

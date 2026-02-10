@@ -32,15 +32,15 @@ public class CoreAttributeTests
     [Fact]
     public void InlineValidationAttribute_StoresExpression()
     {
-        var attr = new InlineValidationAttribute("row.Age > 0");
+        var attr = new InlineValidationAttribute("Row.Age > 0");
 
-        Assert.Equal("row.Age > 0", attr.Expression);
+        Assert.Equal("Row.Age > 0", attr.Expression);
     }
 
     [Fact]
     public void InlineValidationAttribute_OptionalProperties_DefaultToNull()
     {
-        var attr = new InlineValidationAttribute("row.Age > 0");
+        var attr = new InlineValidationAttribute("Row.Age > 0");
 
         Assert.Null(attr.ErrorMessage);
         Assert.Null(attr.RuleName);
@@ -49,7 +49,7 @@ public class CoreAttributeTests
     [Fact]
     public void InlineValidationAttribute_OptionalProperties_CanBeSet()
     {
-        var attr = new InlineValidationAttribute("row.Age > 0")
+        var attr = new InlineValidationAttribute("Row.Age > 0")
         {
             ErrorMessage = "Must be positive",
             RuleName = "PositiveAge"

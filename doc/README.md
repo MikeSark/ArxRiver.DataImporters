@@ -36,17 +36,17 @@ public sealed class EmployeeDto
     public string LastName { get; set; } = "";
 
     [ExcelColumn("Email")]
-    [InlineValidation("row.Email.Contains(\"@\")",
+    [InlineValidation("Row.Email.Contains(\"@\")",
         ErrorMessage = "Email must contain @", RuleName = "EmailFormat")]
     public string Email { get; set; } = "";
 
     [ExcelColumn(4)]  // map by 1-based column number
-    [InlineValidation("row.Age >= 18 && row.Age <= 80",
+    [InlineValidation("Row.Age >= 18 && Row.Age <= 80",
         ErrorMessage = "Age must be 18-80", RuleName = "AgeRange")]
     public int Age { get; set; }
 
     [ExcelColumn("Salary")]
-    [InlineValidation("row.Salary > 0",
+    [InlineValidation("Row.Salary > 0",
         ErrorMessage = "Salary must be positive", RuleName = "PositiveSalary")]
     public decimal Salary { get; set; }
 
@@ -93,7 +93,7 @@ public sealed class EmployeeDto
     public string LastName { get; set; } = "";
 
     [JsonColumn("email")]
-    [InlineValidation("row.Email.Contains(\"@\")",
+    [InlineValidation("Row.Email.Contains(\"@\")",
         ErrorMessage = "Email must contain @", RuleName = "EmailFormat")]
     public string Email { get; set; } = "";
 
@@ -162,7 +162,7 @@ public sealed class EmployeeDto
     public string LastName { get; set; } = "";
 
     [CsvColumn("email")]
-    [InlineValidation("row.Email.Contains(\"@\")",
+    [InlineValidation("Row.Email.Contains(\"@\")",
         ErrorMessage = "Email must contain @", RuleName = "EmailFormat")]
     public string Email { get; set; } = "";
 
@@ -375,15 +375,15 @@ All validation features are shared across Excel, JSON, and CSV importers. Call `
 
 ### InlineValidation (Roslyn expressions)
 
-Write C# expressions directly as attribute strings. The variable `row` refers to the current DTO instance. Expressions are compiled once and cached.
+Write C# expressions directly as attribute strings. The variable `Row` refers to the current DTO instance. Expressions are compiled once and cached.
 
 ```csharp
-[InlineValidation("row.Age >= 18 && row.Age <= 80",
+[InlineValidation("Row.Age >= 18 && Row.Age <= 80",
     ErrorMessage = "Age must be 18-80",
     RuleName = "AgeRange")]
 public int Age { get; set; }
 
-[InlineValidation("row.Email.Contains(\"@\")",
+[InlineValidation("Row.Email.Contains(\"@\")",
     ErrorMessage = "Email must contain @",
     RuleName = "EmailFormat")]
 public string Email { get; set; }
@@ -392,7 +392,7 @@ public string Email { get; set; }
 Can also be placed at the class level for cross-field rules:
 
 ```csharp
-[InlineValidation("row.FirstName != row.LastName",
+[InlineValidation("Row.FirstName != Row.LastName",
     ErrorMessage = "First and last name cannot be identical")]
 public sealed class PersonDto { ... }
 ```
