@@ -4,6 +4,7 @@
     <Project Path="src/ArxRiver.DataImporters.Json/ArxRiver.DataImporters.Json.csproj" />
     <Project Path="src/ArxRiver.DataImporters.Csv/ArxRiver.DataImporters.Csv.csproj" />
     <Project Path="src/ArxRiver.DataImporters.Xml/ArxRiver.DataImporters.Xml.csproj" />
+    <Project Path="src/ArxRiver.DataImporters.Tsv/ArxRiver.DataImporters.Tsv.csproj" />
     <Project Path="src/ArxRiver.DataImporters.Core/ArxRiver.DataImporters.Core.csproj" />
   </Folder>
   <Folder Name="/test/">
@@ -12,11 +13,9 @@
     <Project Path="test/ArxRiver.DataImporters.Json.Tests/ArxRiver.DataImporters.Json.Tests.csproj" />
     <Project Path="test/ArxRiver.DataImporters.Csv.Tests/ArxRiver.DataImporters.Csv.Tests.csproj" />
     <Project Path="test/ArxRiver.DataImporters.Xml.Tests/ArxRiver.DataImporters.Xml.Tests.csproj" />
+    <Project Path="test/ArxRiver.DataImporters.Tsv.Tests/ArxRiver.DataImporters.Tsv.Tests.csproj" />
   </Folder>
   <Folder Name="/doc/">
     <File Path="doc/README.md" />
   </Folder>
-  <Properties Name="ExtensibilityGlobals" Scope="PostLoad">
-    <Property Name="FileExplorer" Value=".github\" />
-  </Properties>
 </Solution>
