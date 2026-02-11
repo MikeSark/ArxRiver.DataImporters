@@ -1,6 +1,6 @@
 # Data Importers (DataImporters)
 
-A .NET library for importing, validating, and reporting on tabular data from Excel, JSON, CSV, and XML files.
+A .NET library for importing, validating, and reporting on tabular data from Excel, JSON, CSV, TSV, and XML files.
 
 ## Target Frameworks
 
@@ -10,11 +10,12 @@ A .NET library for importing, validating, and reporting on tabular data from Exc
 | DataImporters.Excel | `netstandard2.0`, `net9.0`, `net10.0` | Excel importer (ClosedXML-based)|
 | DataImporters.Json | `netstandard2.0`, `net9.0`, `net10.0` |JSON importer (System.Text.Json-based)|
 | DataImporters.Csv | `netstandard2.0`, `net9.0`, `net10.0` | CSV importer (no external dependencies)|
+| DataImporters.Tsv | `netstandard2.0`, `net9.0`, `net10.0` | TSV importer (no external dependencies)|
 | DataImporters.Xml | `netstandard2.0`, `net9.0`, `net10.0` | XML importer (no external dependencies)|
 
 > <strong>The `netstandard2.0` target enables use from .NET Framework 4.6.1+ and any .NET Standard 2.0-compatible runtime</strong>
 
-Reference only the packages you need. JSON consumers don't pull in ClosedXML, CSV and XML consumers have zero external dependencies beyond Core, etc.
+Reference only the packages you need. JSON consumers don't pull in ClosedXML, CSV, TSV, and XML consumers have zero external dependencies beyond Core, etc.
 
 ## Quick Start
 
@@ -217,6 +218,79 @@ Bob,Smith,bob@acme.com,45,95000,2018-07-01
 - Blank lines are automatically skipped
 - No external CSV library required
 
+### TSV Import
+
+```csharp
+using DataImporters.Tsv.Attributes;
+using DataImporters.Tsv.Importing;
+using DataImporters.Core.Attributes;
+using DataImporters.Core.Reporting;
+
+// 1. Define a DTO with TSV column mappings
+public sealed class EmployeeDto
+{
+    [TsvColumn("first_name")]
+    public string FirstName { get; set; } = "";
+
+    [TsvColumn("last_name")]
+    public string LastName { get; set; } = "";
+
+    [TsvColumn("email")]
+    [InlineValidation("Row.Email.Contains(\"@\")",
+        ErrorMessage = "Email must contain @", RuleName = "EmailFormat")]
+    public string Email { get; set; } = "";
+
+    [TsvColumn(4)]  // map by 1-based column number
+    public int Age { get; set; }
+
+    [TsvColumn("salary")]
+    public decimal Salary { get; set; }
+
+    [TsvColumn("start_date")]
+    public DateTime StartDate { get; set; }
+}
+
+// 2. Import from a TSV with headers (default)
+var importer = new TsvImporter<EmployeeDto>("employees.tsv");
+var rows = importer.Import();
+var errors = importer.Validate();
+
+// Or import without headers, mapping by column number
+var importer2 = new TsvImporter<EmployeeDto>("data.tsv", hasHeaderRow: false);
+
+// Or use a custom delimiter (overrides the default tab)
+var importer3 = new TsvImporter<EmployeeDto>("data.txt", delimiter: '|');
+```
+
+**Constructor parameters:**
+
+| Parameter | Default | Description |
+|---|---|---|
+| `filePath` | *(required)* | Path to the TSV file |
+| `hasHeaderRow` | `true` | Whether the first row contains column headers |
+| `delimiter` | `'\t'` | Field delimiter character (default is tab) |
+
+**Expected TSV format (with headers):**
+
+```tsv
+first_name	last_name	email	age	salary	start_date
+Alice	Johnson	alice@acme.com	32	120000	2020-03-15
+Bob	Smith	bob@acme.com	45	95000	2018-07-01
+```
+
+**Expected TSV format (without headers — uses column numbers):**
+
+```tsv
+Alice	Johnson	alice@acme.com	32	120000	2020-03-15
+Bob	Smith	bob@acme.com	45	95000	2018-07-01
+```
+
+**TSV parsing features:**
+- Quoted fields, embedded tabs, escaped quotes (`""`)
+- Custom delimiters: the default is tab, but can be overridden
+- Blank lines are automatically skipped
+- No external library required
+
 ## Builder Pattern
 
 Each importer has a corresponding builder class for fluent construction. Builders are the recommended way to create importers — they provide a clear, discoverable API and separate configuration from execution.
@@ -328,6 +402,41 @@ var importer = CsvImporterBuilder<EmployeeDto>.Create()
 | `ForColumn(selector, validator, errorMessage)` | No | Adds a fluent column-level validator. Chainable |
 | `Build()` | Yes | Returns a configured `CsvImporter<T>` |
 
+### TsvImporterBuilder
+
+```csharp
+using DataImporters.Tsv.Importing;
+
+// Standard TSV with headers
+var importer = TsvImporterBuilder<EmployeeDto>.Create()
+    .FromFile("employees.tsv")
+    .ForColumn(x => x.Salary, (sal, _) => sal > 0, "Salary must be positive")
+    .Build();
+
+var rows = importer.Import();
+var errors = importer.Validate();
+```
+
+```csharp
+// No headers, pipe-delimited
+var importer = TsvImporterBuilder<EmployeeDto>.Create()
+    .FromFile("data.txt")
+    .WithHeaderRow(false)
+    .WithDelimiter('|')
+    .ForColumn(x => x.Age, (age, _) => age >= 18, "Must be 18+")
+    .Build();
+```
+
+**Builder methods:**
+
+| Method | Required | Description |
+|---|---|---|
+| `FromFile(path)` | Yes | Path to the TSV file |
+| `WithHeaderRow(bool)` | No | Whether the first row contains headers (default `true`) |
+| `WithDelimiter(char)` | No | Field delimiter character (default `'\t'`) |
+| `ForColumn(selector, validator, errorMessage)` | No | Adds a fluent column-level validator. Chainable |
+| `Build()` | Yes | Returns a configured `TsvImporter<T>` |
+
 ## Column Mapping
 
 ### ExcelColumnAttribute
@@ -358,6 +467,20 @@ public int Age { get; set; }
 public string Email { get; set; }  // auto-matches header "Email" or "email"
 ```
 
+### TsvColumnAttribute
+
+Map a DTO property to a TSV column by header name or 1-based column number. If no attribute is present, the property name is matched against the header row (case-insensitive). When `hasHeaderRow` is `false`, only properties with a numeric `TsvColumn` attribute are mapped.
+
+```csharp
+[TsvColumn("Full Name")]    // match by header text
+public string Name { get; set; }
+
+[TsvColumn(3)]              // match by column number (1-based)
+public int Age { get; set; }
+
+public string Email { get; set; }  // auto-matches header "Email" or "email"
+```
+
 ### JsonColumnAttribute
 
 Map a DTO property to a JSON property name. If no attribute is present, the property name is used with case-insensitive matching.
@@ -371,7 +494,7 @@ public string Email { get; set; }  // auto-matches "Email" or "email"
 
 ## Validation
 
-All validation features are shared across Excel, JSON, and CSV importers. Call `Validate()` after `Import()`.
+All validation features are shared across Excel, JSON, CSV, and TSV importers. Call `Validate()` after `Import()`.
 
 ### InlineValidation (Roslyn expressions)
 
@@ -446,7 +569,7 @@ importer.Import();
 var errors = importer.Validate();
 ```
 
-Works identically with `JsonImporter<T>` and `CsvImporter<T>`:
+Works identically with `JsonImporter<T>`, `CsvImporter<T>`, and `TsvImporter<T>`:
 
 ```csharp
 var importer = new JsonImporter<EmployeeDto>("file.json")
@@ -457,6 +580,13 @@ var importer = new JsonImporter<EmployeeDto>("file.json")
 
 ```csharp
 var importer = new CsvImporter<EmployeeDto>("file.csv")
+    .ForColumn(x => x.Email,
+        (email, _) => email.EndsWith("@acme.com", StringComparison.OrdinalIgnoreCase),
+        "Email must be an @acme.com address");
+```
+
+```csharp
+var importer = new TsvImporter<EmployeeDto>("file.tsv")
     .ForColumn(x => x.Email,
         (email, _) => email.EndsWith("@acme.com", StringComparison.OrdinalIgnoreCase),
         "Email must be an @acme.com address");
@@ -492,13 +622,13 @@ report.Generate(ReportFormat.Html, ReportDestination.File,
 
 ## Supported Types
 
-All three importers handle these property types (including their `Nullable<T>` forms):
+All importers handle these property types (including their `Nullable<T>` forms):
 
 `string`, `int`, `long`, `double`, `decimal`, `DateTime`, `bool`
 
 ## API Summary
 
-`Importer<T>`, `JsonImporter<T>`, and `CsvImporter<T>` share the same API shape:
+`Importer<T>`, `JsonImporter<T>`, `CsvImporter<T>`, and `TsvImporter<T>` share the same API shape:
 
 | Method | Description |
 |---|---|
@@ -513,7 +643,7 @@ Call order: `Import()` -> `Validate()` -> `GetValidRows()` / `GetInvalidRows()` 
 
 ## Building NuGet Packages
 
-All four library projects are configured for NuGet package generation. Packages are produced automatically on every build.
+All library projects are configured for NuGet package generation. Packages are produced automatically on every build.
 
 ```bash
 # Build Release and generate packages to ./nupkgs
@@ -528,6 +658,7 @@ This produces:
 | `DataImporters.Excel.1.0.0.nupkg` | Excel importer (depends on `DataImporters.Core`) |
 | `DataImporters.Json.1.0.0.nupkg` | JSON importer (depends on `DataImporters.Core`) |
 | `DataImporters.Csv.1.0.0.nupkg` | CSV importer (depends on `DataImporters.Core`) |
+| `DataImporters.Tsv.1.0.0.nupkg` | TSV importer (depends on `DataImporters.Core`) |
 
 Each package multi-targets `netstandard2.0`, `net9.0`, and `net10.0`. Per-TFM dependency groups ensure that `net9.0`/`net10.0` consumers don't pull in polyfill packages like `PolySharp` or `System.Text.Json`.
 
@@ -541,4 +672,4 @@ Each package multi-targets `netstandard2.0`, `net9.0`, and `net10.0`. Per-TFM de
 | System.Text.Json 9.0.4 | DataImporters.Core (netstandard2.0 only) | JSON serialization for reports |
 | PolySharp 1.15.0 | All src projects (netstandard2.0 only) | Language feature polyfills (`init`, records) |
 
-> **Note:** `DataImporters.Csv` has no external dependencies beyond `DataImporters.Core`. CSV parsing is handled inline with a built-in RFC 4180 parser.
+> **Note:** `DataImporters.Csv` and `DataImporters.Tsv` have no external dependencies beyond `DataImporters.Core`. CSV/TSV parsing is handled inline with a built-in parser.
